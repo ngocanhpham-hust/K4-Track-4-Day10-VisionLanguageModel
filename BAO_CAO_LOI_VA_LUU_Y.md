@@ -1,5 +1,15 @@
 # Báo cáo lỗi và lưu ý kỹ thuật
 
+## Mâu thuẫn giữa test template và checker cuối
+
+`tests/test_configs_and_docs.py::test_report_template_has_student_markers_and_ten_questions`
+yêu cầu `REPORT.md` còn chứa chuỗi `<điền>`, trong khi
+`scripts/check_submission.py` đánh FAIL nếu chính chuỗi đó còn tồn tại. Hai điều
+kiện không thể cùng đúng sau khi hoàn thiện báo cáo. Notebook đã chạy và lưu
+`68 passed, 1 skipped` trước khi điền report như đề yêu cầu. Ở bước cuối, giữ
+nguyên `scripts/` và `tests/`, chạy lại các test chức năng rồi lấy `0 FAIL` của
+checker làm điều kiện nghiệm thu.
+
 Tài liệu này ghi các bẫy cần kiểm tra trong quá trình chạy. Sau mỗi lỗi thực tế,
 bổ sung triệu chứng, nguyên nhân, cách sửa và ảnh/log ngắn của lần chạy đó.
 
