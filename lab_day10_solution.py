@@ -531,6 +531,17 @@ def apply_setup(
         if not opened:
             raise RuntimeError("không tìm thấy visual.merger/deepstack_merger_list")
 
+    # GradScaler không cho phép unscale gradient FP16. Tuỳ phiên bản
+    # transformers/peft, adapter LoRA có thể kế thừa dtype FP16 của module gốc.
+    # Giữ mọi tham số đang train ở FP32; trọng số base 4-bit/frozen không đổi.
+    converted = []
+    for name, parameter in peft_model.named_parameters():
+        if parameter.requires_grad and parameter.dtype != torch.float32:
+            parameter.data = parameter.data.to(torch.float32)
+            converted.append(name)
+    if converted:
+        print(f"{setup}: converted {len(converted)} trainable tensors to float32")
+
     trainable = sum(p.numel() for p in peft_model.parameters() if p.requires_grad)
     total = sum(p.numel() for p in peft_model.parameters())
     print(
@@ -623,6 +634,16 @@ def train_sft(
         collate_fn=lambda items: collate_fn(items, processor.tokenizer.pad_token_id),
     )
     trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
+    non_fp32 = [
+        (name, str(parameter.dtype))
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad and parameter.dtype != torch.float32
+    ]
+    if non_fp32:
+        raise TypeError(
+            "Mọi tham số trainable phải là float32 trước GradScaler; "
+            f"phát hiện: {non_fp32[:5]}"
+        )
     n_trainable = sum(parameter.numel() for parameter in trainable)
     optimizer = torch.optim.AdamW(trainable, lr=learning_rate, weight_decay=0.0)
     warmup_steps = max(1, round(0.05 * max_steps))
