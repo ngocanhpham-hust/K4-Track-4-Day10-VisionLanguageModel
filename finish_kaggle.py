@@ -172,6 +172,15 @@ def run_sft_setup(
             save_steps=0,
         )
 
+        # Projector được giữ FP32 khi train, trong khi vision backbone chạy
+        # FP16. Nạp lại artifact vào base model trước inference để state FP32
+        # được copy về dtype inference phù hợp. Bước này cũng kiểm chứng rằng
+        # adapter và projector.pt vừa lưu có thể khôi phục thực sự.
+        del model, processor
+        _release_model()
+        print(f"[RELOAD] Nạp lại {artifact} trước inference để đồng nhất dtype.")
+        model, processor = load_trained_model(artifact, setup=setup)
+
     model.eval()
     model.config.use_cache = True
     run_inference(
