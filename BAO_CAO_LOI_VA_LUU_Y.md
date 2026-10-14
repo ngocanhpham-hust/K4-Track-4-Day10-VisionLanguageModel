@@ -10,8 +10,9 @@ kiện không thể cùng đúng sau khi hoàn thiện báo cáo. Notebook đã 
 nguyên `scripts/` và `tests/`, chạy lại các test chức năng rồi lấy `0 FAIL` của
 checker làm điều kiện nghiệm thu.
 
-Tài liệu này ghi các bẫy cần kiểm tra trong quá trình chạy. Sau mỗi lỗi thực tế,
-bổ sung triệu chứng, nguyên nhân, cách sửa và ảnh/log ngắn của lần chạy đó.
+Tài liệu này ghi các bẫy kỹ thuật và các lỗi đã gặp trong lần chạy Kaggle cuối.
+Các bản sửa tương ứng đã được đưa vào `lab_day10_solution.py`,
+`finish_kaggle.py` và notebook.
 
 ## 1. Không trộn frame cùng session giữa các split
 
@@ -92,4 +93,8 @@ phải so F1 test và xem output mẫu thay vì chỉ nhìn reward train tăng.
 
 | Thời điểm | Setup/step | Triệu chứng | Nguyên nhân | Cách xử lý | Kết quả |
 |---|---|---|---|---|---|
-| Chưa chạy GPU | — | — | — | — | — |
+| 14/10/2026 | E2, bước optimizer đầu | `ValueError: Attempting to unscale FP16 gradients` tại `scaler.unscale_(optimizer)` | Một số tensor/gradient LoRA-projector kế thừa fp16 dù dùng GradScaler | Ép mọi tham số trainable và gradient tích luỹ sang float32 trước `unscale_`; thêm kiểm tra dtype trước train | E2/E3 train đủ 300 bước, loss hữu hạn |
+| 14/10/2026 | Inference E2/E3 | Lỗi phép nhân do dtype projector và vision feature không khớp sau train | Projector được giữ float32 khi train nhưng backbone inference chạy fp16 | Lưu adapter + `projector.pt`, giải phóng model train rồi nạp lại artifact vào base model trước inference | E2/E3 suy luận đủ 311 ảnh và `missing_predictions=0` |
+| 14–15/10/2026 | Kaggle đang chạy E3 | Kernel bị restart; module/repository dưới `/kaggle/working` không còn trong session mới | `/kaggle/working` là vùng tạm theo session; state Python và file chưa Save Version không bền vững | Tách notebook thành các cell theo E0–E4, mỗi chặng tạo ZIP backup; dùng `force=False` để bỏ qua evidence/artifact đã đủ | Lần chạy cuối khôi phục được theo chặng và xuất đủ gói nộp |
+| 15/10/2026 | Tải ZIP kết quả | Link `FileLink` mở qua Jupyter proxy trả `404 page not found` | Route tải của draft session hết hiệu lực/không được trình duyệt giữ phiên | Tải file từ Kaggle Notebook Output/Files sau khi cell đóng gói hoàn tất | Đã lấy được `day10-submission` và đối chiếu checksum/nội dung trước khi chép vào repo |
+| 15/10/2026 | Nghiệm thu local | `pytest -q` còn 1 lỗi vì test đòi `REPORT.md` chứa `<điền>` | Test kiểm tra template mâu thuẫn với checker cuối, vốn cấm placeholder | Giữ nguyên `tests/` và `scripts/`; chạy 67 test chức năng còn lại và dùng `check_submission.py` làm điều kiện nộp | `67 passed, 1 skipped, 1 deselected`; checker đạt `0 FAIL` |
