@@ -675,6 +675,20 @@ def train_sft(
                 raise FloatingPointError(f"loss không hữu hạn tại step {step}: {loss.item()}")
             scaler.scale(scaled_loss).backward()
             accumulated += float(loss.detach())
+
+        # Một số kernel projector của Qwen3-VL trả gradient FP16 ngay cả khi
+        # master parameter đã ở FP32. GradScaler từ chối unscale loại gradient
+        # này. Chuyển gradient đã tích luỹ sang FP32 trước khi unscale để vẫn
+        # giữ loss scaling, clipping và AdamW ở độ chính xác ổn định.
+        promoted_grads = 0
+        for parameter in trainable:
+            if parameter.dtype != torch.float32:
+                parameter.data = parameter.data.to(torch.float32)
+            if parameter.grad is not None and parameter.grad.dtype != torch.float32:
+                parameter.grad.data = parameter.grad.data.to(torch.float32)
+                promoted_grads += 1
+        if promoted_grads and (step == 1 or step % 10 == 0):
+            print(f"{setup} step {step:03d}: promoted {promoted_grads} gradients to float32")
         scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(trainable, 1.0)
         scaler.step(optimizer)
