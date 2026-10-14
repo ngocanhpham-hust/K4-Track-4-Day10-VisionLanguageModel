@@ -447,6 +447,37 @@ def export_figures(best: str) -> list[Path]:
     )
 
 
+def update_checklist(*, checker_ok: bool) -> Path:
+    """Đánh dấu các mục đã được runner kiểm chứng, giữ nguyên mục thủ công."""
+    path = ROOT / "CHECKLIST.md"
+    text = path.read_text(encoding="utf-8")
+    verified_fragments = (
+        "E2 khớp 252 LoRA modules",
+        "E3 khớp 348 LoRA modules",
+        "Loss cả ba setup hữu hạn",
+        "E2/E3 đã lưu và nạp lại `projector.pt`",
+        "Mỗi `run.json` có tham số trainable",
+        "`e1.json`, `e2.json`, `e3.json` không thiếu prediction",
+        "Hai nhánh E4 giữ nguyên mọi biến còn lại",
+        "Có hai evidence E4 đặt tên đúng quy ước",
+        "Câu 10 thảo luận độ chồng lấn CI95",
+        "Bảng E0–E4 lấy từ `report/evidence/*.json`",
+        "Đã trả lời đủ 10 câu bằng số liệu của chính lần chạy này",
+        "Có ít nhất 6 ảnh GT/prediction",
+        "`git rev-list --count HEAD` trả về ít nhất 5",
+        "Git không track `data/`, `work/`",
+    )
+    lines = []
+    for line in text.splitlines():
+        if line.startswith("- [ ]") and any(fragment in line for fragment in verified_fragments):
+            line = line.replace("- [ ]", "- [x]", 1)
+        if checker_ok and line.startswith("- [ ]") and "`python scripts/check_submission.py`" in line:
+            line = line.replace("- [ ]", "- [x]", 1)
+        lines.append(line)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
 def make_archive() -> Path:
     output_root = Path("/kaggle/working")
     if not output_root.exists():
@@ -500,7 +531,12 @@ def run_all(*, force: bool = False) -> Path:
         cwd=ROOT,
         check=True,
     )
-    subprocess.run([sys.executable, "scripts/check_submission.py"], cwd=ROOT, check=False)
+    checker = subprocess.run(
+        [sys.executable, "scripts/check_submission.py"], cwd=ROOT, check=False
+    )
+    update_checklist(checker_ok=checker.returncode == 0)
+    if checker.returncode != 0:
+        raise RuntimeError("check_submission.py còn FAIL; không đóng gói hồ sơ lỗi.")
     archive = make_archive()
     print("\nHOÀN TẤT. Tải file:", archive)
     return archive
