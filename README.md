@@ -9,7 +9,11 @@
 | [`GUIDE.md`](GUIDE.md) | Từng bước + pseudo code + câu hỏi |
 | [`RUBRIC.md`](RUBRIC.md) | Thang điểm 100 (+10) |
 | [`REPORT.md`](REPORT.md) | Mẫu báo cáo 10 câu |
-| `lab_day10.ipynb` | Khung notebook để bạn điền mã |
+| `lab_day10.ipynb` | Notebook Kaggle tự chứa; tự clone repo, tải data và chạy từng chặng |
+| [`lab_day10_solution.py`](lab_day10_solution.py) | Hàm xử lý nhãn, SFT, inference, E4 và reward E5 |
+| [`HUONG_DAN_THUC_HANH.md`](HUONG_DAN_THUC_HANH.md) | Runbook chi tiết từ fork đến nghiệm thu |
+| [`CHECKLIST.md`](CHECKLIST.md) | Danh mục tiến độ và điều kiện nghiệm thu |
+| [`BAO_CAO_LOI_VA_LUU_Y.md`](BAO_CAO_LOI_VA_LUU_Y.md) | Các bẫy kỹ thuật và nhật ký lỗi thực tế |
 | `configs/e0…e5.yaml` | Siêu tham số từng thí nghiệm |
 | `scripts/prepare_data.py` | Tải dữ liệu, chia split |
 | `scripts/score.py` | **Trọng tài**: chấm `predictions.jsonl` |
@@ -73,15 +77,14 @@ Mọi setup dùng **QLoRA 4-bit** (NF4). Riêng ViT và `lm_head` **không lư�
 
 ## 5. Chuẩn bị (≈ 30 phút)
 
-1. Mở `lab_day10.ipynb` trên Colab: Runtime → *Change runtime type* → **T4 GPU**. Mount Google Drive để lưu adapter (session miễn phí có thể bị ngắt).
-2. Tạo **Colab Secrets** tên `KAGGLE_USERNAME` và `KAGGLE_KEY` bằng tài khoản Kaggle của bạn. **Không ghi khoá vào notebook hay commit.**
-3. `pip install -r requirements-colab.txt`, rồi `python scripts/prepare_data.py --kaggle`.
-   Không có tài khoản Kaggle? Tải zip dataset về tay và dùng `--zip <đường dẫn>` hoặc `--source <thư mục đã giải nén>`.
-4. `python -m pytest -q` để chắc công cụ của đề chạy đúng trên máy bạn.
+1. Import `lab_day10.ipynb` vào Kaggle Notebooks.
+2. Trong **Notebook Settings**, bật **Accelerator → GPU** và **Internet → On**.
+3. Chạy từ cell đầu. Notebook tự clone fork cá nhân vào `/kaggle/working`, cài `requirements-colab.txt`, chạy test và tải public dataset bằng `kagglehub`; không cần upload file hoặc thêm API secret.
+4. Nếu đã gắn dataset bằng **Add Input**, notebook tự ưu tiên dữ liệu trong `/kaggle/input` và không tải lại.
 
 ## 6. Yêu cầu và cách nộp
 
-- Colab **T4 16 GB**. Mỗi lần huấn luyện ước tính **20–30 phút** (300 bước; con số ước lượng, hãy ghi thời gian thật của bạn vào báo cáo). Nếu thấy hết VRAM hoặc quá chậm, xem bảng "Khi gặp sự cố" trong GUIDE.
+- Kaggle **P100/T4 16 GB**. Mỗi lần huấn luyện ước tính **20–30 phút** (300 bước; con số ước lượng, hãy ghi GPU và thời gian thật của bạn vào báo cáo). Nếu thấy hết VRAM hoặc quá chậm, xem bảng "Khi gặp sự cố" trong GUIDE.
 - Nộp **repo GitHub công khai** (≥ 5 commit) gồm: `report/evidence/e0–e3.json`, ít nhất một `e4*.json`, `REPORT.md` đã điền, ảnh minh hoạ, notebook/mã của bạn.
 - Trước khi nộp: `python scripts/check_submission.py` không còn FAIL.
 - **Không commit**: `data/`, `work/`, `.env`, trọng số (`*.safetensors`, `*.bin`, `*.pt`).
