@@ -181,6 +181,22 @@ score_experiment(
 So sánh cả F1 và hai khoảng CI95. Nếu CI chồng lấn, không tuyên bố chắc chắn một
 cấu hình tốt hơn; chỉ nói dữ liệu hiện có chưa đủ bằng chứng phân biệt.
 
+### Chạy tự động phần còn thiếu trên cùng runtime
+
+Nếu E0/E1 đã chạy xong như output notebook, không cần chạy lại thủ công từng
+cell. Cell cuối gọi:
+
+```python
+import finish_kaggle
+final_archive = finish_kaggle.run_all(force=False)
+```
+
+Runner kiểm tra đủ 311 prediction trước khi bỏ qua một thí nghiệm, chạy E2/E3,
+chọn setup có F1 cao nhất, chạy E4 `data_size=0.1`, chấm lại nhánh 100%, tạo một
+diagnostic cố ý chấm sai thang toạ độ cho Câu 3, xuất ảnh so sánh và viết báo cáo
+từ evidence thật. Không dùng `force=True` trừ khi muốn xoá lợi ích resume và
+huấn luyện lại toàn bộ.
+
 ## 7. Xuất ít nhất 6 ảnh minh họa
 
 Sau khi chọn model tốt nhất:
@@ -261,3 +277,7 @@ git push origin main
 
 Cuối cùng mở URL GitHub khi chưa đăng nhập/ở cửa sổ ẩn danh để xác nhận repository
 thật sự Public và các evidence/ảnh/report đều truy cập được.
+
+Trên Kaggle, tải `/kaggle/working/day10-submission.zip` từ liên kết ở cell cuối,
+giải nén vào repository cá nhân rồi mới commit/push. ZIP không chứa checkpoint,
+dataset hay prediction thô.

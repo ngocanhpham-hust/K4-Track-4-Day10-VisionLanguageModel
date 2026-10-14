@@ -11,6 +11,7 @@
 | [`REPORT.md`](REPORT.md) | Mẫu báo cáo 10 câu |
 | `lab_day10.ipynb` | Notebook Kaggle tự chứa; tự clone repo, tải data và chạy từng chặng |
 | [`lab_day10_solution.py`](lab_day10_solution.py) | Hàm xử lý nhãn, SFT, inference, E4 và reward E5 |
+| [`finish_kaggle.py`](finish_kaggle.py) | Chạy tiếp phần còn thiếu, chọn model tốt nhất, tạo report/ảnh/ZIP |
 | [`HUONG_DAN_THUC_HANH.md`](HUONG_DAN_THUC_HANH.md) | Runbook chi tiết từ fork đến nghiệm thu |
 | [`CHECKLIST.md`](CHECKLIST.md) | Danh mục tiến độ và điều kiện nghiệm thu |
 | [`BAO_CAO_LOI_VA_LUU_Y.md`](BAO_CAO_LOI_VA_LUU_Y.md) | Các bẫy kỹ thuật và nhật ký lỗi thực tế |
@@ -81,6 +82,7 @@ Mọi setup dùng **QLoRA 4-bit** (NF4). Riêng ViT và `lm_head` **không lư�
 2. Trong **Notebook Settings**, bật **Accelerator → GPU** và **Internet → On**.
 3. Chạy từ cell đầu. Notebook tự clone fork cá nhân vào `/kaggle/working`, cài `requirements-colab.txt`, chạy test và tải public dataset bằng `kagglehub`; không cần upload file hoặc thêm API secret.
 4. Nếu đã gắn dataset bằng **Add Input**, notebook tự ưu tiên dữ liệu trong `/kaggle/input` và không tải lại.
+5. Sau khi E1 xong, chạy cell cuối **“Chạy nốt E2, E3, E4”**. Cell có thể chạy lại và tự bỏ qua evidence/prediction đã hoàn tất; cuối cùng nó tạo `/kaggle/working/day10-submission.zip`.
 
 ## 6. Yêu cầu và cách nộp
 
